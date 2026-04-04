@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ARG: חידות</title>
+    <title>VideoStudio Pro - Video Editor</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Playfair+Display:wght@700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap');
 
         * {
             margin: 0;
@@ -14,108 +14,496 @@
         }
 
         body {
-            background: #0a0e27;
+            background: #1a1a1a;
             color: #e0e0e0;
-            font-family: 'Courier Prime', monospace;
-            line-height: 1.6;
-            overflow-x: hidden;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
         }
 
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(circle at 20% 50%, rgba(138, 43, 226, 0.03) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(255, 0, 127, 0.03) 0%, transparent 50%);
-            pointer-events: none;
-            z-index: -1;
+        .app-container {
+            display: flex;
+            height: 100vh;
+            flex-direction: column;
         }
 
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 40px 20px;
-            min-height: 100vh;
-            position: relative;
-            z-index: 1;
+        /* Header/Toolbar */
+        .toolbar {
+            background: #242424;
+            border-bottom: 1px solid #333333;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
         }
 
-        .title {
-            text-align: center;
-            margin-bottom: 60px;
-        }
-
-        .title h1 {
-            font-family: 'Playfair Display', serif;
-            font-size: 3.5em;
-            background: linear-gradient(135deg, #8a2be2, #ff007f);
+        .app-title {
+            font-size: 1.2em;
+            font-weight: 700;
+            background: linear-gradient(135deg, #00d4ff, #0099ff);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            margin-bottom: 10px;
-            letter-spacing: 2px;
         }
 
-        .title p {
-            color: #888;
-            font-size: 0.9em;
-            letter-spacing: 3px;
-            text-transform: uppercase;
+        .toolbar-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
         }
 
-        .puzzles-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
-            margin-bottom: 40px;
-        }
-
-        .puzzle-card {
-            background: linear-gradient(135deg, rgba(138, 43, 226, 0.1), rgba(255, 0, 127, 0.05));
-            border: 1px solid rgba(138, 43, 226, 0.3);
-            border-radius: 8px;
-            padding: 25px;
+        .btn {
+            padding: 8px 16px;
+            background: #333333;
+            border: 1px solid #444444;
+            color: #e0e0e0;
+            border-radius: 6px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
+            font-size: 0.9em;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .btn:hover {
+            background: #404040;
+            border-color: #00d4ff;
+            color: #00d4ff;
+        }
+
+        .btn.primary {
+            background: #0099ff;
+            border-color: #0099ff;
+            color: white;
+        }
+
+        .btn.primary:hover {
+            background: #00b3ff;
+        }
+
+        /* Main layout */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 200px 1fr 250px;
+            gap: 12px;
+            padding: 12px;
+            flex: 1;
             overflow: hidden;
-            backdrop-filter: blur(10px);
         }
 
-        .puzzle-card:hover:not(.locked) {
-            border-color: rgba(138, 43, 226, 0.6);
-            box-shadow: 0 0 20px rgba(138, 43, 226, 0.3);
-            transform: translateY(-5px);
+        /* Panels */
+        .panel {
+            background: #242424;
+            border: 1px solid #333333;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
 
-        .puzzle-card.locked {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .puzzle-number {
-            font-size: 0.8em;
-            color: #8a2be2;
+        .panel-header {
+            background: #2c2c2c;
+            padding: 12px;
+            border-bottom: 1px solid #333333;
+            font-weight: 600;
+            font-size: 0.9em;
             text-transform: uppercase;
-            letter-spacing: 2px;
+            letter-spacing: 1px;
+            color: #00d4ff;
+        }
+
+        .panel-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+        }
+
+        /* Left panel - Media */
+        #mediaPanel {
+            grid-column: 1;
+        }
+
+        .media-item {
+            padding: 10px;
+            background: #2c2c2c;
+            border: 1px solid #333333;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            cursor: grab;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .media-item:hover {
+            background: #333333;
+            border-color: #00d4ff;
+        }
+
+        .media-item.dragging {
+            opacity: 0.5;
+        }
+
+        .media-icon {
+            font-size: 1.2em;
+            min-width: 20px;
+        }
+
+        .media-name {
+            font-size: 0.85em;
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Center - Preview */
+        .center-column {
+            grid-column: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        #previewContainer {
+            flex: 0 0 400px;
+            background: #000000;
+            border: 1px solid #333333;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* Timeline */
+        #timelinePanel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .timeline-header {
+            height: 50px;
+            background: #2c2c2c;
+            border-bottom: 1px solid #333333;
+            display: flex;
+            overflow-x: auto;
+            padding: 0 12px;
+            align-items: center;
+        }
+
+        .timeline-time {
+            font-size: 0.75em;
+            color: #888888;
+            min-width: 50px;
+            text-align: center;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .timeline-content {
+            flex: 1;
+            overflow: auto;
+            background: #1a1a1a;
+            position: relative;
+        }
+
+        .timeline-tracks {
+            position: relative;
+            width: 100%;
+        }
+
+        .track {
+            height: 80px;
+            background: #242424;
+            border-bottom: 1px solid #333333;
+            position: relative;
+            display: flex;
+            align-items: flex-start;
+            padding: 4px;
+        }
+
+        .track-label {
+            width: 150px;
+            background: #2c2c2c;
+            border-right: 1px solid #333333;
+            padding: 8px;
+            font-size: 0.85em;
+            color: #888888;
+            display: flex;
+            align-items: center;
+        }
+
+        .clip {
+            position: absolute;
+            height: 60px;
+            background: linear-gradient(135deg, #0099ff, #00d4ff);
+            border: 1px solid #00b3ff;
+            border-radius: 4px;
+            cursor: grab;
+            top: 10px;
+            display: flex;
+            align-items: center;
+            padding: 0 8px;
+            font-size: 0.8em;
+            font-weight: 600;
+            color: white;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 153, 255, 0.3);
+        }
+
+        .clip.selected {
+            border: 2px solid #ffff00;
+            box-shadow: 0 0 12px rgba(255, 255, 0, 0.5);
+        }
+
+        .clip.audio {
+            background: linear-gradient(135deg, #ff6b9d, #ff8fb0);
+            border-color: #ff8fb0;
+        }
+
+        .clip.text {
+            background: linear-gradient(135deg, #8e44ad, #9b59b6);
+            border-color: #9b59b6;
+        }
+
+        .clip-name {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex: 1;
+        }
+
+        .playhead {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 2px;
+            height: 100%;
+            background: #ff0000;
+            z-index: 50;
+            cursor: col-resize;
+        }
+
+        /* Right panel - Properties */
+        #propertiesPanel {
+            grid-column: 3;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .property-group {
+            margin-bottom: 16px;
+        }
+
+        .property-label {
+            font-size: 0.8em;
+            color: #888888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        input[type="range"],
+        input[type="number"],
+        input[type="text"],
+        input[type="color"],
+        select {
+            width: 100%;
+            padding: 8px;
+            background: #2c2c2c;
+            border: 1px solid #333333;
+            color: #e0e0e0;
+            border-radius: 4px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9em;
             margin-bottom: 8px;
         }
 
-        .puzzle-title {
-            font-size: 1.3em;
-            font-weight: bold;
-            margin-bottom: 12px;
-            color: #fff;
+        input[type="range"] {
+            padding: 0;
+            height: 6px;
+            cursor: pointer;
         }
 
-        .puzzle-description {
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #00d4ff;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #00d4ff;
+            cursor: pointer;
+            border: none;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #00d4ff;
+            box-shadow: 0 0 8px rgba(0, 212, 255, 0.3);
+        }
+
+        .effect-button {
+            width: 100%;
+            padding: 10px;
+            background: #2c2c2c;
+            border: 1px solid #333333;
+            color: #e0e0e0;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 6px;
+            transition: all 0.2s;
             font-size: 0.9em;
-            color: #aaa;
-            margin-bottom: 15px;
+        }
+
+        .effect-button:hover {
+            background: #333333;
+            border-color: #00d4ff;
+            color: #00d4ff;
+        }
+
+        .effect-button.active {
+            background: #00d4ff;
+            border-color: #00d4ff;
+            color: #000000;
+        }
+
+        .playback-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .time-display {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85em;
+            color: #00d4ff;
+            padding: 8px;
+            background: #2c2c2c;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        /* Scrollbars */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #444444;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555555;
+        }
+
+        /* Responsive */
+        @media (max-width: 1400px) {
+            .main-layout {
+                grid-template-columns: 150px 1fr 200px;
+            }
+        }
+
+        .context-menu {
+            position: fixed;
+            background: #2c2c2c;
+            border: 1px solid #333333;
+            border-radius: 6px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            min-width: 150px;
+            display: none;
+        }
+
+        .context-menu.show {
+            display: block;
+        }
+
+        .context-menu-item {
+            padding: 10px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid #333333;
+            font-size: 0.9em;
+            transition: background 0.2s;
+        }
+
+        .context-menu-item:hover {
+            background: #333333;
+            color: #00d4ff;
+        }
+
+        .context-menu-item:last-child {
+            border-bottom: none;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: #000000;
+            color: #00d4ff;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            pointer-events: none;
+            z-index: 999;
+            white-space: nowrap;
+        }
+
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background: #2c2c2c;
+            border: 1px solid #333333;
+            border-radius: 4px;
+            z-index: 100;
+            min-width: 100%;
+            margin-top: 4px;
+        }
+
+        .dropdown-content.show {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #333333;
+            transition: background 0.2s;
+        }
+
+        .dropdown-item:hover {
+            background: #333333;
+            color: #00d4ff;
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
         }
 
         .modal {
@@ -125,463 +513,758 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 1000;
-            justify-content: center;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
             align-items: center;
-            padding: 20px;
+            justify-content: center;
         }
 
-        .modal.active {
+        .modal.show {
             display: flex;
         }
 
         .modal-content {
-            background: #0a0e27;
-            border: 2px solid rgba(138, 43, 226, 0.5);
+            background: #242424;
+            border: 1px solid #333333;
             border-radius: 8px;
-            padding: 40px;
-            max-width: 600px;
-            width: 100%;
-            max-height: 80vh;
-            overflow-y: auto;
-            position: relative;
-            backdrop-filter: blur(20px);
+            padding: 25px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
         }
 
-        .close-btn {
-            position: absolute;
-            top: 15px;
-            left: 20px;
-            background: none;
-            border: none;
-            color: #8a2be2;
-            font-size: 1.5em;
-            cursor: pointer;
-            transition: color 0.2s;
-        }
-
-        .close-btn:hover {
-            color: #ff007f;
-        }
-
-        .modal h2 {
-            margin-bottom: 20px;
-            color: #8a2be2;
-            font-size: 1.8em;
-        }
-
-        .puzzle-input {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            background: rgba(138, 43, 226, 0.1);
-            border: 1px solid rgba(138, 43, 226, 0.3);
-            color: #fff;
-            font-family: 'Courier Prime', monospace;
-            border-radius: 4px;
-        }
-
-        .puzzle-input:focus {
-            outline: none;
-            border-color: rgba(138, 43, 226, 0.8);
-        }
-
-        .puzzle-button {
-            background: linear-gradient(135deg, #8a2be2, #ff007f);
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-family: 'Courier Prime', monospace;
-            font-weight: bold;
-            transition: all 0.3s;
-            margin: 10px 10px 10px 0;
-        }
-
-        .puzzle-button:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 15px rgba(138, 43, 226, 0.5);
-        }
-
-        .hint-text {
-            margin-top: 15px;
-            padding: 12px;
-            background: rgba(255, 200, 0, 0.1);
-            border-left: 3px solid #ffc800;
-            color: #ffc800;
-            font-size: 0.9em;
-            border-radius: 4px;
-        }
-
-        .success-message {
-            margin-top: 15px;
-            padding: 12px;
-            background: rgba(0, 200, 100, 0.2);
-            border-left: 3px solid #00c864;
-            color: #00c864;
-            border-radius: 4px;
-        }
-
-        .error-message {
-            margin-top: 10px;
-            color: #ff6b6b;
-            font-size: 0.9em;
-        }
-
-        .final-answer {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: linear-gradient(135deg, #8a2be2, #ff007f);
-            padding: 15px 25px;
-            border-radius: 50px;
-            color: white;
-            font-weight: bold;
-            font-size: 1.1em;
-            box-shadow: 0 0 20px rgba(138, 43, 226, 0.5);
-            opacity: 0;
-            pointer-events: none;
-            transition: all 0.5s;
-            z-index: 999;
-        }
-
-        .final-answer.show {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .morse-display {
-            background: rgba(0, 0, 0, 0.5);
-            padding: 15px;
-            border-radius: 4px;
-            margin: 10px 0;
-            font-family: monospace;
-            font-size: 1.1em;
-            letter-spacing: 2px;
-            color: #00ff00;
-            text-shadow: 0 0 10px #00ff00;
-        }
-
-        .cipher-text {
-            background: rgba(0, 0, 0, 0.5);
-            padding: 15px;
-            border-radius: 4px;
-            margin: 10px 0;
+        .modal-title {
             font-size: 1.2em;
-            letter-spacing: 3px;
-            text-align: center;
-            color: #ff007f;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #00d4ff;
         }
 
-        .progress-bar {
-            margin-top: 20px;
-            height: 4px;
-            background: rgba(138, 43, 226, 0.2);
-            border-radius: 2px;
-            overflow: hidden;
+        .modal-input {
+            width: 100%;
+            padding: 10px;
+            background: #2c2c2c;
+            border: 1px solid #333333;
+            color: #e0e0e0;
+            border-radius: 4px;
+            margin-bottom: 12px;
         }
 
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #8a2be2, #ff007f);
-            width: 0%;
-            transition: width 0.5s;
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .modal-buttons button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .modal-buttons .btn-ok {
+            background: #0099ff;
+            color: white;
+        }
+
+        .modal-buttons .btn-cancel {
+            background: #333333;
+            color: #e0e0e0;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="title">
-            <h1>ARG: הערפל</h1>
-            <p>פתור את החידות ומצא את התשובה הסופית</p>
+    <div class="app-container">
+        <!-- Toolbar -->
+        <div class="toolbar">
+            <div class="app-title">🎬 VideoStudio Pro</div>
+            <div class="toolbar-group">
+                <button class="btn" id="undoBtn" title="Undo (Ctrl+Z)">⟲ Undo</button>
+                <button class="btn" id="redoBtn" title="Redo (Ctrl+Y)">⟳ Redo</button>
+                <div style="width: 1px; background: #333333; height: 24px;"></div>
+                <button class="btn" id="newProjectBtn">+ New Project</button>
+                <button class="btn" id="importBtn">📥 Import Media</button>
+                <button class="btn primary" id="exportBtn">📤 Export</button>
+            </div>
         </div>
 
-        <div class="puzzles-grid" id="puzzlesGrid"></div>
+        <!-- Main Layout -->
+        <div class="main-layout">
+            <!-- Left: Media Library -->
+            <div class="panel" id="mediaPanel">
+                <div class="panel-header">📁 Media Library</div>
+                <div class="panel-content" id="mediaList"></div>
+                <div style="padding: 12px; border-top: 1px solid #333333;">
+                    <button class="btn" style="width: 100%;" id="addMediaBtn">+ Add Clip</button>
+                </div>
+            </div>
 
-        <div class="progress-bar">
-            <div class="progress-fill" id="progressFill"></div>
+            <!-- Center: Preview & Timeline -->
+            <div class="center-column">
+                <div id="previewContainer">
+                    <canvas id="previewCanvas" width="640" height="360"></canvas>
+                </div>
+                <div class="panel" id="timelinePanel">
+                    <div class="panel-header">📹 Timeline</div>
+                    <div class="timeline-header" id="timelineHeader"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-tracks" id="timelineTracks"></div>
+                        <div class="playhead" id="playhead"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Properties & Effects -->
+            <div class="panel" id="propertiesPanel">
+                <div class="panel-header">⚙️ Properties</div>
+                <div class="panel-content">
+                    <div id="propertiesContent">
+                        <p style="color: #888888; font-size: 0.9em; text-align: center;">Select a clip to edit</p>
+                    </div>
+                </div>
+                <div class="panel-header" style="margin-top: 16px;">🎨 Effects</div>
+                <div class="panel-content">
+                    <div id="effectsContent"></div>
+                </div>
+                <div class="panel-header" style="margin-top: 16px;">⏱️ Playback</div>
+                <div style="padding: 12px; border-top: 1px solid #333333;">
+                    <div class="playback-controls">
+                        <button class="btn" id="playBtn" style="flex: 1;">▶ Play</button>
+                        <button class="btn" id="stopBtn" style="flex: 1;">⏹ Stop</button>
+                    </div>
+                    <div class="time-display" id="timeDisplay">00:00 / 00:00</div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="modal" id="modal">
+    <!-- Context Menu -->
+    <div class="context-menu" id="contextMenu"></div>
+
+    <!-- Export Modal -->
+    <div class="modal" id="exportModal">
         <div class="modal-content">
-            <button class="close-btn" id="closeBtn">✕</button>
-            <div id="modalBody"></div>
+            <div class="modal-title">Export Video</div>
+            <label>
+                <div class="property-label">Project Name</div>
+                <input type="text" class="modal-input" id="exportName" placeholder="My Video" value="My Video">
+            </label>
+            <label>
+                <div class="property-label">Format</div>
+                <select id="exportFormat">
+                    <option>MP4 (H.264)</option>
+                    <option>WebM (VP9)</option>
+                    <option>PNG Sequence</option>
+                </select>
+            </label>
+            <label>
+                <div class="property-label">Quality</div>
+                <select id="exportQuality">
+                    <option>720p (HD)</option>
+                    <option>1080p (Full HD)</option>
+                    <option>2K</option>
+                    <option>4K</option>
+                </select>
+            </label>
+            <div class="modal-buttons">
+                <button class="btn-ok" onclick="exportProject()">Export</button>
+                <button class="btn-cancel" onclick="closeModal('exportModal')">Cancel</button>
+            </div>
         </div>
     </div>
-
-    <div class="final-answer" id="finalAnswer">🎹 פסנתר!</div>
 
     <script>
-        const gameState = {
-            solved: {
-                morse: false,
-                cipher: false,
-                logic: false,
-                image: false,
-                frequency: false
-            }
-        };
+        // ==================== CLASSES ====================
 
-        const puzzles = [
-            {
-                id: 'morse',
-                title: 'קוד מורס',
-                description: 'פענח את ההודעה בקוד מורס',
-                number: '01',
-                locked: false
-            },
-            {
-                id: 'cipher',
-                title: 'צופן החלפה',
-                description: 'פענח את הטקסט המוצפן',
-                number: '02',
-                locked: true
-            },
-            {
-                id: 'logic',
-                title: 'לוגיקה מתפתלת',
-                description: 'השלם את הסדרה',
-                number: '03',
-                locked: true
-            },
-            {
-                id: 'image',
-                title: 'פאזל ויזואלי',
-                description: 'מצא את המילה בתמונה',
-                number: '04',
-                locked: true
-            },
-            {
-                id: 'frequency',
-                title: 'ניתוח תדר',
-                description: 'מצא את המילה הנדירה',
-                number: '05',
-                locked: true
+        class Clip {
+            constructor(id, name, type = 'video', duration = 3) {
+                this.id = id;
+                this.name = name;
+                this.type = type;
+                this.duration = duration;
+                this.startTime = 0;
+                this.endTime = duration;
+                this.trackIndex = 0;
+                this.color = this.getColorByType();
+                this.effects = {};
+                this.opacity = 1;
+                this.volume = 1;
+                this.properties = {
+                    brightness: 100,
+                    contrast: 100,
+                    saturation: 100,
+                    blur: 0,
+                    scale: 100,
+                    rotationX: 0,
+                    rotationY: 0,
+                    rotationZ: 0
+                };
             }
-        ];
 
-        function init() {
-            renderPuzzles();
-            document.getElementById('closeBtn').addEventListener('click', closeModal);
-            document.getElementById('modal').addEventListener('click', function(e) {
-                if (e.target === this) closeModal();
-            });
+            getColorByType() {
+                const colors = {
+                    video: '#0099ff',
+                    audio: '#ff6b9d',
+                    text: '#8e44ad',
+                    image: '#f39c12'
+                };
+                return colors[this.type] || '#0099ff';
+            }
+
+            getDuration() {
+                return this.endTime - this.startTime;
+            }
+
+            isOverlapping(otherClip) {
+                return !(this.endTime <= otherClip.startTime || this.startTime >= otherClip.endTime);
+            }
         }
 
-        function renderPuzzles() {
-            const grid = document.getElementById('puzzlesGrid');
-            grid.innerHTML = '';
+        class Track {
+            constructor(id, name, type = 'video') {
+                this.id = id;
+                this.name = name;
+                this.type = type;
+                this.clips = [];
+                this.visible = true;
+                this.locked = false;
+                this.volume = 1;
+            }
 
-            puzzles.forEach(function(puzzle) {
-                const card = document.createElement('div');
-                card.className = 'puzzle-card' + (puzzle.locked ? ' locked' : '');
-                
-                card.innerHTML = '<div class="puzzle-number">' + puzzle.number + '</div>' +
-                                '<div class="puzzle-title">' + puzzle.title + '</div>' +
-                                '<div class="puzzle-description">' +
-                                (puzzle.locked ? '<span>🔒</span>' : '') +
-                                puzzle.description +
-                                '</div>';
+            addClip(clip) {
+                this.clips.push(clip);
+                this.clips.sort((a, b) => a.startTime - b.startTime);
+            }
 
-                if (!puzzle.locked) {
-                    card.addEventListener('click', function() {
-                        openPuzzle(puzzle.id);
-                    });
+            removeClip(clipId) {
+                this.clips = this.clips.filter(c => c.id !== clipId);
+            }
+
+            getClipAt(time) {
+                return this.clips.find(c => time >= c.startTime && time < c.endTime);
+            }
+        }
+
+        class Timeline {
+            constructor() {
+                this.tracks = [];
+                this.duration = 10;
+                this.currentTime = 0;
+                this.frameRate = 30;
+                this.zoom = 50;
+                this.isPlaying = false;
+                this.startPlayTime = 0;
+                this.trackIdCounter = 0;
+                this.clipIdCounter = 0;
+                this.addTrack('Video 1', 'video');
+                this.addTrack('Audio 1', 'audio');
+            }
+
+            addTrack(name, type) {
+                const track = new Track(`track-${this.trackIdCounter++}`, name, type);
+                this.tracks.push(track);
+                return track;
+            }
+
+            createClip(name, type = 'video', duration = 3) {
+                const clip = new Clip(`clip-${this.clipIdCounter++}`, name, type, duration);
+                return clip;
+            }
+
+            addClipToTrack(clipId, trackId) {
+                const track = this.tracks.find(t => t.id === trackId);
+                if (!track) return false;
+
+                const clip = this.findClipById(clipId);
+                if (!clip) return false;
+
+                // Check if clip already exists in another track
+                const existingTrack = this.findTrackWithClip(clipId);
+                if (existingTrack) {
+                    existingTrack.removeClip(clipId);
                 }
 
-                grid.appendChild(card);
-            });
+                track.addClip(clip);
+                clip.trackIndex = this.tracks.indexOf(track);
+                return true;
+            }
 
-            updateProgress();
-        }
+            removeClip(clipId) {
+                const track = this.findTrackWithClip(clipId);
+                if (track) {
+                    track.removeClip(clipId);
+                }
+            }
 
-        function openPuzzle(puzzleId) {
-            const puzzle = puzzles.find(function(p) { return p.id === puzzleId; });
-            if (puzzle && !puzzle.locked) {
-                const modal = document.getElementById('modal');
-                const body = document.getElementById('modalBody');
-                body.innerHTML = '<h2>' + puzzle.title + '</h2>' + getPuzzleContent(puzzleId);
-                modal.classList.add('active');
-                
-                setTimeout(function() {
-                    attachPuzzleListeners(puzzleId);
-                }, 100);
+            findClipById(id) {
+                for (const track of this.tracks) {
+                    const clip = track.clips.find(c => c.id === id);
+                    if (clip) return clip;
+                }
+                return null;
+            }
+
+            findTrackWithClip(clipId) {
+                return this.tracks.find(t => t.clips.some(c => c.id === clipId));
+            }
+
+            getTimelineLength() {
+                let maxTime = this.duration;
+                for (const track of this.tracks) {
+                    for (const clip of track.clips) {
+                        maxTime = Math.max(maxTime, clip.endTime);
+                    }
+                }
+                return maxTime;
+            }
+
+            updateDuration() {
+                this.duration = this.getTimelineLength();
             }
         }
 
-        function closeModal() {
-            document.getElementById('modal').classList.remove('active');
+        class VideoEditor {
+            constructor() {
+                this.timeline = new Timeline();
+                this.selectedClip = null;
+                this.undoStack = [];
+                this.redoStack = [];
+                this.mediaLibrary = [];
+                this.playing = false;
+                this.canvas = document.getElementById('previewCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.animationId = null;
+                this.init();
+            }
+
+            init() {
+                this.createDefaultMedia();
+                this.setupEventListeners();
+                this.render();
+                this.startAnimation();
+            }
+
+            createDefaultMedia() {
+                const clips = [
+                    { name: 'Clip 1', type: 'video' },
+                    { name: 'Clip 2', type: 'video' },
+                    { name: 'Background Music', type: 'audio' },
+                    { name: 'Effect Sound', type: 'audio' },
+                    { name: 'Text Overlay', type: 'text' }
+                ];
+
+                this.mediaLibrary = clips.map((clip, idx) => 
+                    this.timeline.createClip(clip.name, clip.type, 3 + Math.random() * 4)
+                );
+            }
+
+            setupEventListeners() {
+                // Toolbar buttons
+                document.getElementById('undoBtn').addEventListener('click', () => this.undo());
+                document.getElementById('redoBtn').addEventListener('click', () => this.redo());
+                document.getElementById('newProjectBtn').addEventListener('click', () => this.newProject());
+                document.getElementById('importBtn').addEventListener('click', () => this.importMedia());
+                document.getElementById('exportBtn').addEventListener('click', () => this.showExportModal());
+                document.getElementById('addMediaBtn').addEventListener('click', () => this.addNewClip());
+                document.getElementById('playBtn').addEventListener('click', () => this.togglePlayback());
+                document.getElementById('stopBtn').addEventListener('click', () => this.stopPlayback());
+
+                // Playhead drag
+                const playhead = document.getElementById('playhead');
+                let isDragging = false;
+
+                playhead.addEventListener('mousedown', () => { isDragging = true; });
+                document.addEventListener('mousemove', (e) => {
+                    if (!isDragging) return;
+                    const timeline = document.querySelector('.timeline-content');
+                    const rect = timeline.getBoundingClientRect();
+                    const x = e.clientX - rect.left + timeline.scrollLeft;
+                    const pixelsPerSecond = 100 * this.timeline.zoom / 50;
+                    this.timeline.currentTime = Math.max(0, x / pixelsPerSecond);
+                });
+                document.addEventListener('mouseup', () => { isDragging = false; });
+
+                // Keyboard shortcuts
+                document.addEventListener('keydown', (e) => {
+                    if (e.ctrlKey || e.metaKey) {
+                        if (e.key === 'z' && !e.shiftKey) { e.preventDefault(); this.undo(); }
+                        if (e.key === 'z' && e.shiftKey) { e.preventDefault(); this.redo(); }
+                        if (e.key === 'y') { e.preventDefault(); this.redo(); }
+                    }
+                    if (e.key === ' ') { e.preventDefault(); this.togglePlayback(); }
+                });
+
+                // Timeline click to seek
+                document.querySelector('.timeline-content').addEventListener('click', (e) => {
+                    const timeline = document.querySelector('.timeline-content');
+                    const x = e.offsetX + timeline.scrollLeft;
+                    const pixelsPerSecond = 100 * this.timeline.zoom / 50;
+                    this.timeline.currentTime = Math.max(0, x / pixelsPerSecond);
+                });
+            }
+
+            addNewClip() {
+                const name = prompt('Clip name:', 'New Clip');
+                if (!name) return;
+                const clip = this.timeline.createClip(name, 'video');
+                this.mediaLibrary.push(clip);
+                this.renderMediaLibrary();
+            }
+
+            importMedia() {
+                const name = prompt('Import as:', 'Imported Media');
+                if (!name) return;
+                const clip = this.timeline.createClip(name, 'video', 5);
+                this.mediaLibrary.push(clip);
+                this.renderMediaLibrary();
+            }
+
+            togglePlayback() {
+                if (this.timeline.isPlaying) {
+                    this.stopPlayback();
+                } else {
+                    this.timeline.isPlaying = true;
+                    this.timeline.startPlayTime = Date.now() - (this.timeline.currentTime * 1000);
+                    document.getElementById('playBtn').textContent = '⏸ Pause';
+                }
+            }
+
+            stopPlayback() {
+                this.timeline.isPlaying = false;
+                document.getElementById('playBtn').textContent = '▶ Play';
+            }
+
+            updatePlayback() {
+                if (this.timeline.isPlaying) {
+                    this.timeline.currentTime = (Date.now() - this.timeline.startPlayTime) / 1000;
+                    if (this.timeline.currentTime >= this.timeline.duration) {
+                        this.timeline.currentTime = 0;
+                    }
+                }
+            }
+
+            selectClip(clipId) {
+                this.selectedClip = this.timeline.findClipById(clipId);
+                this.renderProperties();
+                this.renderTimeline();
+            }
+
+            addEffect(effectName) {
+                if (!this.selectedClip) return;
+                this.selectedClip.effects[effectName] = true;
+                this.renderProperties();
+            }
+
+            removeEffect(effectName) {
+                if (!this.selectedClip) return;
+                delete this.selectedClip.effects[effectName];
+                this.renderProperties();
+            }
+
+            updateProperty(property, value) {
+                if (!this.selectedClip) return;
+                this.selectedClip.properties[property] = value;
+                this.saveState();
+            }
+
+            saveState() {
+                this.undoStack.push(JSON.stringify(this.timeline));
+                this.redoStack = [];
+                if (this.undoStack.length > 50) this.undoStack.shift();
+            }
+
+            undo() {
+                if (this.undoStack.length === 0) return;
+                this.redoStack.push(JSON.stringify(this.timeline));
+                const state = this.undoStack.pop();
+                this.timeline = JSON.parse(state);
+                this.renderTimeline();
+            }
+
+            redo() {
+                if (this.redoStack.length === 0) return;
+                this.undoStack.push(JSON.stringify(this.timeline));
+                const state = this.redoStack.pop();
+                this.timeline = JSON.parse(state);
+                this.renderTimeline();
+            }
+
+            newProject() {
+                if (confirm('Create new project? Current project will be lost.')) {
+                    this.timeline = new Timeline();
+                    this.selectedClip = null;
+                    this.undoStack = [];
+                    this.redoStack = [];
+                    this.createDefaultMedia();
+                    this.renderMediaLibrary();
+                    this.renderTimeline();
+                    this.renderProperties();
+                }
+            }
+
+            showExportModal() {
+                document.getElementById('exportModal').classList.add('show');
+            }
+
+            render() {
+                const canvas = this.canvas;
+                const ctx = this.ctx;
+
+                // Clear canvas
+                ctx.fillStyle = '#000000';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Background gradient
+                const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                gradient.addColorStop(0, '#1a1a1a');
+                gradient.addColorStop(1, '#0a0a0a');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Draw timeline content
+                const currentTime = this.timeline.currentTime;
+                for (let i = 0; i < this.timeline.tracks.length; i++) {
+                    const track = this.timeline.tracks[i];
+                    const clip = track.getClipAt(currentTime);
+                    
+                    if (clip && track.type === 'video') {
+                        // Draw clip preview
+                        ctx.fillStyle = clip.color;
+                        ctx.globalAlpha = 0.7;
+                        ctx.fillRect(50, 50 + i * 80, 300, 80);
+                        
+                        // Apply effects
+                        if (clip.properties.blur > 0) {
+                            ctx.filter = `blur(${clip.properties.blur}px)`;
+                        }
+                        if (clip.properties.brightness !== 100) {
+                            ctx.filter = `brightness(${clip.properties.brightness}%)`;
+                        }
+                        
+                        ctx.filter = 'none';
+                        ctx.globalAlpha = 1;
+
+                        // Draw clip name
+                        ctx.fillStyle = '#ffffff';
+                        ctx.font = 'bold 14px Inter';
+                        ctx.fillText(clip.name, 60, 100);
+                    }
+                }
+
+                // Draw time indicator
+                ctx.fillStyle = '#00d4ff';
+                ctx.font = 'bold 16px JetBrains Mono';
+                ctx.fillText(this.formatTime(currentTime), 50, 30);
+            }
+
+            formatTime(seconds) {
+                const minutes = Math.floor(seconds / 60);
+                const secs = Math.floor(seconds % 60);
+                const ms = Math.floor((seconds % 1) * 100);
+                return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}.${String(ms).padStart(2, '0')}`;
+            }
+
+            renderMediaLibrary() {
+                const list = document.getElementById('mediaList');
+                list.innerHTML = '';
+                this.mediaLibrary.forEach(clip => {
+                    const item = document.createElement('div');
+                    item.className = 'media-item';
+                    item.draggable = true;
+                    item.innerHTML = `
+                        <div class="media-icon">${clip.type === 'video' ? '📹' : '🔊'}</div>
+                        <div class="media-name">${clip.name}</div>
+                    `;
+
+                    item.addEventListener('dragstart', (e) => {
+                        e.dataTransfer.effectAllowed = 'copy';
+                        e.dataTransfer.setData('clipId', clip.id);
+                    });
+
+                    list.appendChild(item);
+                });
+            }
+
+            renderTimeline() {
+                const tracks = document.getElementById('timelineTracks');
+                tracks.innerHTML = '';
+
+                const pixelsPerSecond = 100 * this.timeline.zoom / 50;
+
+                this.timeline.tracks.forEach((track, trackIdx) => {
+                    const trackEl = document.createElement('div');
+                    trackEl.className = 'track';
+                    trackEl.style.gridTemplateColumns = `150px 1fr`;
+                    trackEl.style.display = 'grid';
+
+                    const label = document.createElement('div');
+                    label.className = 'track-label';
+                    label.textContent = track.name;
+                    trackEl.appendChild(label);
+
+                    const content = document.createElement('div');
+                    content.style.position = 'relative';
+                    content.style.height = '80px';
+                    content.style.background = '#1a1a1a';
+
+                    // Allow drag and drop
+                    content.addEventListener('dragover', (e) => e.preventDefault());
+                    content.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        const clipId = e.dataTransfer.getData('clipId');
+                        const rect = content.getBoundingClientRect();
+                        const x = e.clientX - rect.left;
+                        const startTime = x / pixelsPerSecond;
+                        const clip = this.timeline.findClipById(clipId);
+                        if (clip) {
+                            clip.startTime = startTime;
+                            clip.endTime = startTime + clip.duration;
+                            this.timeline.addClipToTrack(clipId, track.id);
+                            this.saveState();
+                            this.renderTimeline();
+                        }
+                    });
+
+                    track.clips.forEach(clip => {
+                        const clipEl = document.createElement('div');
+                        clipEl.className = 'clip' + (this.selectedClip?.id === clip.id ? ' selected' : '') + (clip.type === 'audio' ? ' audio' : '') + (clip.type === 'text' ? ' text' : '');
+                        clipEl.style.left = (clip.startTime * pixelsPerSecond) + 'px';
+                        clipEl.style.width = (clip.getDuration() * pixelsPerSecond) + 'px';
+                        clipEl.innerHTML = `<span class="clip-name">${clip.name}</span>`;
+                        clipEl.draggable = true;
+                        clipEl.addEventListener('click', () => this.selectClip(clip.id));
+                        clipEl.addEventListener('dragstart', (e) => {
+                            e.dataTransfer.effectAllowed = 'move';
+                            e.dataTransfer.setData('clipId', clip.id);
+                            this.draggedClip = { clip, offsetX: e.offsetX };
+                        });
+
+                        content.appendChild(clipEl);
+                    });
+
+                    trackEl.appendChild(content);
+                    tracks.appendChild(trackEl);
+                });
+
+                // Update playhead position
+                const pixelsPerSecond = 100 * this.timeline.zoom / 50;
+                const playhead = document.getElementById('playhead');
+                const timelineContent = document.querySelector('.timeline-content');
+                playhead.style.left = (this.timeline.currentTime * pixelsPerSecond - timelineContent.scrollLeft) + 'px';
+
+                // Update time display
+                document.getElementById('timeDisplay').textContent = 
+                    `${this.formatTime(this.timeline.currentTime)} / ${this.formatTime(this.timeline.duration)}`;
+            }
+
+            renderProperties() {
+                const content = document.getElementById('propertiesContent');
+                const effectsContent = document.getElementById('effectsContent');
+
+                if (!this.selectedClip) {
+                    content.innerHTML = '<p style="color: #888888; font-size: 0.9em; text-align: center;">Select a clip to edit</p>';
+                    effectsContent.innerHTML = '';
+                    return;
+                }
+
+                let html = `
+                    <div class="property-group">
+                        <label class="property-label">Clip Name</label>
+                        <input type="text" value="${this.selectedClip.name}" onchange="editor.selectedClip.name = this.value; editor.renderTimeline();">
+                    </div>
+                    <div class="property-group">
+                        <label class="property-label">Start Time</label>
+                        <input type="number" step="0.1" value="${this.selectedClip.startTime}" onchange="editor.selectedClip.startTime = parseFloat(this.value); editor.saveState(); editor.renderTimeline();">
+                    </div>
+                    <div class="property-group">
+                        <label class="property-label">Duration</label>
+                        <input type="number" step="0.1" value="${this.selectedClip.getDuration()}" onchange="editor.selectedClip.endTime = editor.selectedClip.startTime + parseFloat(this.value); editor.saveState(); editor.renderTimeline();">
+                    </div>
+                    <div class="property-group">
+                        <label class="property-label">Opacity</label>
+                        <input type="range" min="0" max="100" value="${this.selectedClip.opacity * 100}" onchange="editor.selectedClip.opacity = this.value / 100; editor.saveState();">
+                    </div>
+                    <div class="property-group">
+                        <label class="property-label">Volume</label>
+                        <input type="range" min="0" max="100" value="${this.selectedClip.volume * 100}" onchange="editor.selectedClip.volume = this.value / 100; editor.saveState();">
+                    </div>
+                `;
+
+                content.innerHTML = html;
+
+                // Effects
+                let effectsHtml = '';
+                const availableEffects = ['Brightness', 'Contrast', 'Saturation', 'Blur', 'Scale', 'Rotation'];
+                availableEffects.forEach(effect => {
+                    const active = this.selectedClip.effects[effect];
+                    effectsHtml += `
+                        <button class="effect-button ${active ? 'active' : ''}" onclick="editor.${active ? 'removeEffect' : 'addEffect'}('${effect}'); editor.renderProperties();">
+                            ${active ? '✓' : '+'} ${effect}
+                        </button>
+                    `;
+                });
+
+                // Add property sliders for active effects
+                Object.keys(this.selectedClip.effects).forEach(effect => {
+                    const propMap = {
+                        'Brightness': 'brightness',
+                        'Contrast': 'contrast',
+                        'Saturation': 'saturation',
+                        'Blur': 'blur',
+                        'Scale': 'scale',
+                        'Rotation': 'rotationZ'
+                    };
+                    const prop = propMap[effect];
+                    if (prop) {
+                        const value = this.selectedClip.properties[prop];
+                        effectsHtml += `
+                            <div class="property-group">
+                                <label class="property-label">${effect}</label>
+                                <input type="range" min="0" max="200" value="${value}" onchange="editor.updateProperty('${prop}', this.value); editor.renderProperties();">
+                            </div>
+                        `;
+                    }
+                });
+
+                effectsContent.innerHTML = effectsHtml;
+            }
+
+            startAnimation() {
+                const tick = () => {
+                    this.updatePlayback();
+                    this.render();
+                    this.renderTimeline();
+                    this.animationId = requestAnimationFrame(tick);
+                };
+                tick();
+            }
         }
 
-        function attachPuzzleListeners(puzzleId) {
-            const btn = document.querySelector('.puzzle-button');
-            if (!btn) return;
+        // ==================== INITIALIZATION ====================
+
+        const editor = new VideoEditor();
+
+        // Modal functions
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+
+        function exportProject() {
+            const name = document.getElementById('exportName').value;
+            const format = document.getElementById('exportFormat').value;
+            const quality = document.getElementById('exportQuality').value;
             
-            if (puzzleId === 'morse') {
-                btn.addEventListener('click', solveMorse);
-            } else if (puzzleId === 'cipher') {
-                btn.addEventListener('click', solveCipher);
-            } else if (puzzleId === 'logic') {
-                btn.addEventListener('click', solveLogic);
-            } else if (puzzleId === 'image') {
-                btn.addEventListener('click', solveImage);
-            } else if (puzzleId === 'frequency') {
-                btn.addEventListener('click', solveFrequency);
-            }
+            alert(`Exporting: ${name}\nFormat: ${format}\nQuality: ${quality}\n\n✓ Export started! Check your downloads folder.`);
+            closeModal('exportModal');
         }
 
-        function getPuzzleContent(puzzleId) {
-            if (puzzleId === 'morse') {
-                return '<p>קוד המורס הבא מסתיר מילה:</p>' +
-                       '<div class="morse-display">.--. / .- / -. / ---</div>' +
-                       '<p>מה המילה?</p>' +
-                       '<input type="text" class="puzzle-input" id="morseAnswer" placeholder="הקלד תשובה...">' +
-                       '<button class="puzzle-button">בדוק</button>' +
-                       '<div class="hint-text">💡 כיוון: הסכמה או הסכתה</div>' +
-                       '<div id="morseError"></div>';
-            }
-            if (puzzleId === 'cipher') {
-                return '<p>צופן החלפה מסתיר הודעה:</p>' +
-                       '<div class="cipher-text">תהבוא רעא גדל דךן</div>' +
-                       '<p>מה הטקסט המקורי?</p>' +
-                       '<input type="text" class="puzzle-input" id="cipherAnswer" placeholder="הקלד תשובה...">' +
-                       '<button class="puzzle-button">בדוק</button>' +
-                       '<div class="hint-text">💡 כיוון: משהו ממוזיקה</div>' +
-                       '<div id="cipherError"></div>';
-            }
-            if (puzzleId === 'logic') {
-                return '<p>מה המספר הבא בסדרה?</p>' +
-                       '<div class="cipher-text" style="color: #00ff00;">2, 3, 5, 7, 11, 13, ?</div>' +
-                       '<p>הקלד את המספר:</p>' +
-                       '<input type="number" class="puzzle-input" id="logicAnswer" placeholder="מספר...">' +
-                       '<button class="puzzle-button">בדוק</button>' +
-                       '<div class="hint-text">💡 כיוון: מספרים ראשוניים</div>' +
-                       '<div id="logicError"></div>';
-            }
-            if (puzzleId === 'image') {
-                return '<p>מה המילה המוסתרת בדפוס הזה?</p>' +
-                       '<svg width="100%" height="200" viewBox="0 0 400 200" style="margin: 15px 0; background: rgba(0,0,0,0.3); border-radius: 4px;">' +
-                       '<text x="200" y="100" font-size="60" text-anchor="middle" fill="rgba(138, 43, 226, 0.3)" font-weight="bold">PIANO</text>' +
-                       '<circle cx="50" cy="50" r="30" fill="none" stroke="rgba(255, 0, 127, 0.2)" stroke-width="2"/>' +
-                       '<circle cx="350" cy="150" r="40" fill="none" stroke="rgba(138, 43, 226, 0.2)" stroke-width="2"/>' +
-                       '<line x1="0" y1="100" x2="400" y2="100" stroke="rgba(138, 43, 226, 0.1)" stroke-width="1"/>' +
-                       '</svg>' +
-                       '<p>מה המילה?</p>' +
-                       '<input type="text" class="puzzle-input" id="imageAnswer" placeholder="תעתיק עברי...">' +
-                       '<button class="puzzle-button">בדוק</button>' +
-                       '<div class="hint-text">💡 כיוון: כלי נגינה</div>' +
-                       '<div id="imageError"></div>';
-            }
-            if (puzzleId === 'frequency') {
-                return '<p>איזו מילה מופיעה בתדר שונה מהאחרות?</p>' +
-                       '<div class="cipher-text" style="color: #ffc800; font-size: 0.9em;">פסנתר, דלת, חלון, דלת, עץ, דלת, אבן, דלת, פסנתר</div>' +
-                       '<p>הקלד את המילה הנדירה:</p>' +
-                       '<input type="text" class="puzzle-input" id="frequencyAnswer" placeholder="מילה...">' +
-                       '<button class="puzzle-button">בדוק</button>' +
-                       '<div class="hint-text">💡 כיוון: מה מופיע פחות?</div>' +
-                       '<div id="frequencyError"></div>';
-            }
-            return '';
-        }
-
-        function solveMorse() {
-            const answer = document.getElementById('morseAnswer').value.trim();
-            if (answer.toLowerCase() === 'פנו' || answer.toLowerCase() === 'פן') {
-                markSolved('morse');
-                showSuccess('משוגע! 🎉');
-                unlockPuzzle('cipher');
-            } else {
-                document.getElementById('morseError').innerHTML = '<div class="error-message">❌ לא נכון</div>';
-            }
-        }
-
-        function solveCipher() {
-            const answer = document.getElementById('cipherAnswer').value.trim();
-            if (answer.toLowerCase() === 'מקלדת' || answer.toLowerCase() === 'פסנתר') {
-                markSolved('cipher');
-                showSuccess('דוקא! 🎉');
-                unlockPuzzle('logic');
-            } else {
-                document.getElementById('cipherError').innerHTML = '<div class="error-message">❌ לא מדויק</div>';
-            }
-        }
-
-        function solveLogic() {
-            const answer = document.getElementById('logicAnswer').value.trim();
-            if (answer === '17') {
-                markSolved('logic');
-                showSuccess('נכון! 🎉');
-                unlockPuzzle('image');
-            } else {
-                document.getElementById('logicError').innerHTML = '<div class="error-message">❌ לא נכון</div>';
-            }
-        }
-
-        function solveImage() {
-            const answer = document.getElementById('imageAnswer').value.trim();
-            if (answer.toLowerCase() === 'פיאנו' || answer.toLowerCase() === 'פסנתר') {
-                markSolved('image');
-                showSuccess('נכון! 🎉');
-                unlockPuzzle('frequency');
-            } else {
-                document.getElementById('imageError').innerHTML = '<div class="error-message">❌ לא זה</div>';
-            }
-        }
-
-        function solveFrequency() {
-            const answer = document.getElementById('frequencyAnswer').value.trim();
-            if (answer.toLowerCase() === 'עץ' || answer.toLowerCase() === 'אבן' || answer.toLowerCase() === 'חלון') {
-                markSolved('frequency');
-                showSuccess('סיימת! 🎉');
-                revealFinalAnswer();
-            } else {
-                document.getElementById('frequencyError').innerHTML = '<div class="error-message">❌ לא זה</div>';
-            }
-        }
-
-        function markSolved(puzzleId) {
-            gameState.solved[puzzleId] = true;
-            updateProgress();
-        }
-
-        function unlockPuzzle(puzzleId) {
-            const puzzle = puzzles.find(function(p) { return p.id === puzzleId; });
-            if (puzzle) {
-                puzzle.locked = false;
-                renderPuzzles();
-            }
-        }
-
-        function showSuccess(message) {
-            const body = document.getElementById('modalBody');
-            const div = document.createElement('div');
-            div.className = 'success-message';
-            div.textContent = message;
-            body.appendChild(div);
-            setTimeout(function() {
-                div.remove();
-            }, 3000);
-        }
-
-        function updateProgress() {
-            const solved = Object.values(gameState.solved).filter(function(v) { return v; }).length;
-            const total = Object.keys(gameState.solved).length;
-            const percentage = (solved / total) * 100;
-            document.getElementById('progressFill').style.width = percentage + '%';
-        }
-
-        function revealFinalAnswer() {
-            const finalAnswer = document.getElementById('finalAnswer');
-            finalAnswer.classList.add('show');
-            setTimeout(function() {
-                closeModal();
-            }, 500);
-        }
-
-        init();
+        // Render initial state
+        editor.renderMediaLibrary();
+        editor.renderTimeline();
+        editor.renderProperties();
     </script>
 </body>
 </html>
