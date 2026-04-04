@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ARG: חידות מסתורים</title>
+    <title>ARG: חידות</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Playfair+Display:wght@700;900&display=swap');
 
@@ -21,7 +21,6 @@
             overflow-x: hidden;
         }
 
-        /* Animated background */
         body::before {
             content: '';
             position: fixed;
@@ -48,7 +47,6 @@
         .title {
             text-align: center;
             margin-bottom: 60px;
-            animation: glitch 3s infinite;
         }
 
         .title h1 {
@@ -88,19 +86,7 @@
             backdrop-filter: blur(10px);
         }
 
-        .puzzle-card::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-            transform: rotate(45deg);
-            animation: shine 3s infinite;
-        }
-
-        .puzzle-card:hover {
+        .puzzle-card:hover:not(.locked) {
             border-color: rgba(138, 43, 226, 0.6);
             box-shadow: 0 0 20px rgba(138, 43, 226, 0.3);
             transform: translateY(-5px);
@@ -109,12 +95,6 @@
         .puzzle-card.locked {
             opacity: 0.5;
             cursor: not-allowed;
-        }
-
-        .puzzle-card.locked:hover {
-            transform: none;
-            box-shadow: none;
-            border-color: rgba(138, 43, 226, 0.3);
         }
 
         .puzzle-number {
@@ -138,12 +118,6 @@
             margin-bottom: 15px;
         }
 
-        .lock-icon {
-            display: inline-block;
-            margin-right: 5px;
-        }
-
-        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -160,7 +134,6 @@
 
         .modal.active {
             display: flex;
-            animation: fadeIn 0.3s ease;
         }
 
         .modal-content {
@@ -174,7 +147,6 @@
             overflow-y: auto;
             position: relative;
             backdrop-filter: blur(20px);
-            animation: slideUp 0.3s ease;
         }
 
         .close-btn {
@@ -199,10 +171,6 @@
             font-size: 1.8em;
         }
 
-        .puzzle-content {
-            margin-bottom: 25px;
-        }
-
         .puzzle-input {
             width: 100%;
             padding: 12px;
@@ -212,7 +180,6 @@
             color: #fff;
             font-family: 'Courier Prime', monospace;
             border-radius: 4px;
-            transition: border-color 0.2s;
         }
 
         .puzzle-input:focus {
@@ -230,7 +197,7 @@
             font-family: 'Courier Prime', monospace;
             font-weight: bold;
             transition: all 0.3s;
-            margin-right: 10px;
+            margin: 10px 10px 10px 0;
         }
 
         .puzzle-button:hover {
@@ -283,33 +250,6 @@
         .final-answer.show {
             opacity: 1;
             pointer-events: auto;
-            animation: pulse 0.5s;
-        }
-
-        /* Animations */
-        @keyframes glitch {
-            0%, 100% { text-shadow: 0 0 0 transparent; }
-            50% { text-shadow: 2px 2px 0 rgba(138, 43, 226, 0.3); }
-        }
-
-        @keyframes shine {
-            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
-            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @keyframes slideUp {
-            from { transform: translateY(30px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
         }
 
         .morse-display {
@@ -349,20 +289,6 @@
             width: 0%;
             transition: width 0.5s;
         }
-
-        @media (max-width: 768px) {
-            .title h1 {
-                font-size: 2em;
-            }
-            
-            .puzzles-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .modal-content {
-                padding: 25px;
-            }
-        }
     </style>
 </head>
 <body>
@@ -381,7 +307,7 @@
 
     <div class="modal" id="modal">
         <div class="modal-content">
-            <button class="close-btn" onclick="closeModal()">✕</button>
+            <button class="close-btn" id="closeBtn">✕</button>
             <div id="modalBody"></div>
         </div>
     </div>
@@ -389,7 +315,6 @@
     <div class="final-answer" id="finalAnswer">🎹 פסנתר!</div>
 
     <script>
-        // Game state
         const gameState = {
             solved: {
                 morse: false,
@@ -397,11 +322,9 @@
                 logic: false,
                 image: false,
                 frequency: false
-            },
-            currentPuzzle: null
+            }
         };
 
-        // Puzzles definition
         const puzzles = [
             {
                 id: 'morse',
@@ -440,42 +363,34 @@
             }
         ];
 
-        function getPuzzleContent(puzzleId) {
-            const contents = {
-                morse: '<p>קוד המורס הבא מסתיר מילה:</p><div class="morse-display">.--. / .- / -. / ---</div><p>מה המילה? (תשובה בעברית)</p><input type="text" class="puzzle-input" id="morseAnswer" placeholder="הקלד תשובה..."><button class="puzzle-button" onclick="solveMorse()">בדוק</button><div class="hint-text">💡 כיוון: הסכמה או הסכתה</div><div id="morseError"></div>',
-                cipher: '<p>צופן החלפה מסתיר הודעה:</p><div class="cipher-text">תהבוא רעא גדל דךן</div><p>מה הטקסט המקורי?</p><input type="text" class="puzzle-input" id="cipherAnswer" placeholder="הקלד תשובה..."><button class="puzzle-button" onclick="solveCipher()">בדוק</button><div class="hint-text">💡 כיוון: משהו ממוזיקה</div><div id="cipherError"></div>',
-                logic: '<p>מה המספר הבא בסדרה?</p><div class="cipher-text" style="color: #00ff00;">2, 3, 5, 7, 11, 13, ?</div><p>הקלד את המספר:</p><input type="number" class="puzzle-input" id="logicAnswer" placeholder="מספר..."><button class="puzzle-button" onclick="solveLogic()">בדוק</button><div class="hint-text">💡 כיוון: מספרים ראשוניים</div><div id="logicError"></div>',
-                image: '<p>מה המילה המוסתרת בדפוס הזה?</p><svg width="100%" height="200" viewBox="0 0 400 200" style="margin: 15px 0; background: rgba(0,0,0,0.3); border-radius: 4px;"><text x="200" y="100" font-size="60" text-anchor="middle" fill="rgba(138, 43, 226, 0.3)" font-weight="bold">PIANO</text><circle cx="50" cy="50" r="30" fill="none" stroke="rgba(255, 0, 127, 0.2)" stroke-width="2"/><circle cx="350" cy="150" r="40" fill="none" stroke="rgba(138, 43, 226, 0.2)" stroke-width="2"/><line x1="0" y1="100" x2="400" y2="100" stroke="rgba(138, 43, 226, 0.1)" stroke-width="1"/></svg><p>מה המילה המוסתרת? (בתעתיק עברי)</p><input type="text" class="puzzle-input" id="imageAnswer" placeholder="תעתיק עברי..."><button class="puzzle-button" onclick="solveImage()">בדוק</button><div class="hint-text">💡 כיוון: כלי נגינה</div><div id="imageError"></div>',
-                frequency: '<p>איזו מילה מופיעה בתדר שונה מהאחרות?</p><div class="cipher-text" style="color: #ffc800; font-size: 0.9em;">פסנתר, דלת, חלון, דלת, עץ, דלת, אבן, דלת, פסנתר</div><p>הקלד את המילה הנדירה:</p><input type="text" class="puzzle-input" id="frequencyAnswer" placeholder="מילה..."><button class="puzzle-button" onclick="solveFrequency()">בדוק</button><div class="hint-text">💡 כיוון: מה מופיע פחות?</div><div id="frequencyError"></div>'
-            };
-            return contents[puzzleId] || '';
-        }
-
-        // Initialize
         function init() {
             renderPuzzles();
+            document.getElementById('closeBtn').addEventListener('click', closeModal);
+            document.getElementById('modal').addEventListener('click', function(e) {
+                if (e.target === this) closeModal();
+            });
         }
 
         function renderPuzzles() {
             const grid = document.getElementById('puzzlesGrid');
             grid.innerHTML = '';
 
-            puzzles.forEach(puzzle => {
+            puzzles.forEach(function(puzzle) {
                 const card = document.createElement('div');
-                card.className = `puzzle-card ${puzzle.locked ? 'locked' : ''}`;
+                card.className = 'puzzle-card' + (puzzle.locked ? ' locked' : '');
                 
-                if (!puzzle.locked) {
-                    card.onclick = () => openPuzzle(puzzle.id);
-                }
+                card.innerHTML = '<div class="puzzle-number">' + puzzle.number + '</div>' +
+                                '<div class="puzzle-title">' + puzzle.title + '</div>' +
+                                '<div class="puzzle-description">' +
+                                (puzzle.locked ? '<span>🔒</span>' : '') +
+                                puzzle.description +
+                                '</div>';
 
-                card.innerHTML = `
-                    <div class="puzzle-number">${puzzle.number}</div>
-                    <div class="puzzle-title">${puzzle.title}</div>
-                    <div class="puzzle-description">
-                        ${puzzle.locked ? '<span class="lock-icon">🔒</span>' : ''}
-                        ${puzzle.description}
-                    </div>
-                `;
+                if (!puzzle.locked) {
+                    card.addEventListener('click', function() {
+                        openPuzzle(puzzle.id);
+                    });
+                }
 
                 grid.appendChild(card);
             });
@@ -484,14 +399,16 @@
         }
 
         function openPuzzle(puzzleId) {
-            const puzzle = puzzles.find(p => p.id === puzzleId);
+            const puzzle = puzzles.find(function(p) { return p.id === puzzleId; });
             if (puzzle && !puzzle.locked) {
-                gameState.currentPuzzle = puzzleId;
                 const modal = document.getElementById('modal');
                 const body = document.getElementById('modalBody');
-                const content = getPuzzleContent(puzzleId);
-                body.innerHTML = '<h2>' + puzzle.title + '</h2>' + content;
+                body.innerHTML = '<h2>' + puzzle.title + '</h2>' + getPuzzleContent(puzzleId);
                 modal.classList.add('active');
+                
+                setTimeout(function() {
+                    attachPuzzleListeners(puzzleId);
+                }, 100);
             }
         }
 
@@ -499,48 +416,118 @@
             document.getElementById('modal').classList.remove('active');
         }
 
-        // Solvers
+        function attachPuzzleListeners(puzzleId) {
+            const btn = document.querySelector('.puzzle-button');
+            if (!btn) return;
+            
+            if (puzzleId === 'morse') {
+                btn.addEventListener('click', solveMorse);
+            } else if (puzzleId === 'cipher') {
+                btn.addEventListener('click', solveCipher);
+            } else if (puzzleId === 'logic') {
+                btn.addEventListener('click', solveLogic);
+            } else if (puzzleId === 'image') {
+                btn.addEventListener('click', solveImage);
+            } else if (puzzleId === 'frequency') {
+                btn.addEventListener('click', solveFrequency);
+            }
+        }
+
+        function getPuzzleContent(puzzleId) {
+            if (puzzleId === 'morse') {
+                return '<p>קוד המורס הבא מסתיר מילה:</p>' +
+                       '<div class="morse-display">.--. / .- / -. / ---</div>' +
+                       '<p>מה המילה?</p>' +
+                       '<input type="text" class="puzzle-input" id="morseAnswer" placeholder="הקלד תשובה...">' +
+                       '<button class="puzzle-button">בדוק</button>' +
+                       '<div class="hint-text">💡 כיוון: הסכמה או הסכתה</div>' +
+                       '<div id="morseError"></div>';
+            }
+            if (puzzleId === 'cipher') {
+                return '<p>צופן החלפה מסתיר הודעה:</p>' +
+                       '<div class="cipher-text">תהבוא רעא גדל דךן</div>' +
+                       '<p>מה הטקסט המקורי?</p>' +
+                       '<input type="text" class="puzzle-input" id="cipherAnswer" placeholder="הקלד תשובה...">' +
+                       '<button class="puzzle-button">בדוק</button>' +
+                       '<div class="hint-text">💡 כיוון: משהו ממוזיקה</div>' +
+                       '<div id="cipherError"></div>';
+            }
+            if (puzzleId === 'logic') {
+                return '<p>מה המספר הבא בסדרה?</p>' +
+                       '<div class="cipher-text" style="color: #00ff00;">2, 3, 5, 7, 11, 13, ?</div>' +
+                       '<p>הקלד את המספר:</p>' +
+                       '<input type="number" class="puzzle-input" id="logicAnswer" placeholder="מספר...">' +
+                       '<button class="puzzle-button">בדוק</button>' +
+                       '<div class="hint-text">💡 כיוון: מספרים ראשוניים</div>' +
+                       '<div id="logicError"></div>';
+            }
+            if (puzzleId === 'image') {
+                return '<p>מה המילה המוסתרת בדפוס הזה?</p>' +
+                       '<svg width="100%" height="200" viewBox="0 0 400 200" style="margin: 15px 0; background: rgba(0,0,0,0.3); border-radius: 4px;">' +
+                       '<text x="200" y="100" font-size="60" text-anchor="middle" fill="rgba(138, 43, 226, 0.3)" font-weight="bold">PIANO</text>' +
+                       '<circle cx="50" cy="50" r="30" fill="none" stroke="rgba(255, 0, 127, 0.2)" stroke-width="2"/>' +
+                       '<circle cx="350" cy="150" r="40" fill="none" stroke="rgba(138, 43, 226, 0.2)" stroke-width="2"/>' +
+                       '<line x1="0" y1="100" x2="400" y2="100" stroke="rgba(138, 43, 226, 0.1)" stroke-width="1"/>' +
+                       '</svg>' +
+                       '<p>מה המילה?</p>' +
+                       '<input type="text" class="puzzle-input" id="imageAnswer" placeholder="תעתיק עברי...">' +
+                       '<button class="puzzle-button">בדוק</button>' +
+                       '<div class="hint-text">💡 כיוון: כלי נגינה</div>' +
+                       '<div id="imageError"></div>';
+            }
+            if (puzzleId === 'frequency') {
+                return '<p>איזו מילה מופיעה בתדר שונה מהאחרות?</p>' +
+                       '<div class="cipher-text" style="color: #ffc800; font-size: 0.9em;">פסנתר, דלת, חלון, דלת, עץ, דלת, אבן, דלת, פסנתר</div>' +
+                       '<p>הקלד את המילה הנדירה:</p>' +
+                       '<input type="text" class="puzzle-input" id="frequencyAnswer" placeholder="מילה...">' +
+                       '<button class="puzzle-button">בדוק</button>' +
+                       '<div class="hint-text">💡 כיוון: מה מופיע פחות?</div>' +
+                       '<div id="frequencyError"></div>';
+            }
+            return '';
+        }
+
         function solveMorse() {
             const answer = document.getElementById('morseAnswer').value.trim();
-            if (answer.toLowerCase() === 'פנו' || answer.toLowerCase() === 'פן' || answer === 'פפנו') {
+            if (answer.toLowerCase() === 'פנו' || answer.toLowerCase() === 'פן') {
                 markSolved('morse');
-                showSuccess('משוגע! פתחת את החידה הראשונה.');
+                showSuccess('משוגע! 🎉');
                 unlockPuzzle('cipher');
             } else {
-                document.getElementById('morseError').innerHTML = '<div class="error-message">❌ לא נכון. נסה שוב!</div>';
+                document.getElementById('morseError').innerHTML = '<div class="error-message">❌ לא נכון</div>';
             }
         }
 
         function solveCipher() {
             const answer = document.getElementById('cipherAnswer').value.trim();
-            if (answer.toLowerCase() === 'קטע זה כאן' || answer.toLowerCase() === 'מקלדת דירה' || answer.toLowerCase() === 'קטע זה כא') {
+            if (answer.toLowerCase() === 'מקלדת' || answer.toLowerCase() === 'פסנתר') {
                 markSolved('cipher');
-                showSuccess('דוקא! המנעול השני נשבר.');
+                showSuccess('דוקא! 🎉');
                 unlockPuzzle('logic');
             } else {
-                document.getElementById('cipherError').innerHTML = '<div class="error-message">❌ לא מדויק. הנסה שוב!</div>';
+                document.getElementById('cipherError').innerHTML = '<div class="error-message">❌ לא מדויק</div>';
             }
         }
 
         function solveLogic() {
             const answer = document.getElementById('logicAnswer').value.trim();
-            if (answer === '17' || answer === '17.0') {
+            if (answer === '17') {
                 markSolved('logic');
-                showSuccess('מתמטיקה נכונה! עוד שתיים בלבד.');
+                showSuccess('נכון! 🎉');
                 unlockPuzzle('image');
             } else {
-                document.getElementById('logicError').innerHTML = '<div class="error-message">❌ לא נכון. חשוב על הסדרה...');
+                document.getElementById('logicError').innerHTML = '<div class="error-message">❌ לא נכון</div>';
             }
         }
 
         function solveImage() {
             const answer = document.getElementById('imageAnswer').value.trim();
-            if (answer.toLowerCase() === 'פיאנו' || answer.toLowerCase() === 'פיאנה' || answer.toLowerCase() === 'פסנתר') {
+            if (answer.toLowerCase() === 'פיאנו' || answer.toLowerCase() === 'פסנתר') {
                 markSolved('image');
-                showSuccess('ראיית חדה! חידה אחת נשארה.');
+                showSuccess('נכון! 🎉');
                 unlockPuzzle('frequency');
             } else {
-                document.getElementById('imageError').innerHTML = '<div class="error-message">❌ לא זה. בדוק שוב...');
+                document.getElementById('imageError').innerHTML = '<div class="error-message">❌ לא זה</div>';
             }
         }
 
@@ -548,10 +535,10 @@
             const answer = document.getElementById('frequencyAnswer').value.trim();
             if (answer.toLowerCase() === 'עץ' || answer.toLowerCase() === 'אבן' || answer.toLowerCase() === 'חלון') {
                 markSolved('frequency');
-                showSuccess('🎉 סיימת את כל החידות!');
+                showSuccess('סיימת! 🎉');
                 revealFinalAnswer();
             } else {
-                document.getElementById('frequencyError').innerHTML = '<div class="error-message">❌ משהו לא בסדר. אל תשכח לספור!');
+                document.getElementById('frequencyError').innerHTML = '<div class="error-message">❌ לא זה</div>';
             }
         }
 
@@ -561,7 +548,7 @@
         }
 
         function unlockPuzzle(puzzleId) {
-            const puzzle = puzzles.find(p => p.id === puzzleId);
+            const puzzle = puzzles.find(function(p) { return p.id === puzzleId; });
             if (puzzle) {
                 puzzle.locked = false;
                 renderPuzzles();
@@ -570,15 +557,17 @@
 
         function showSuccess(message) {
             const body = document.getElementById('modalBody');
-            const successDiv = document.createElement('div');
-            successDiv.className = 'success-message';
-            successDiv.textContent = message;
-            body.appendChild(successDiv);
-            setTimeout(() => successDiv.remove(), 3000);
+            const div = document.createElement('div');
+            div.className = 'success-message';
+            div.textContent = message;
+            body.appendChild(div);
+            setTimeout(function() {
+                div.remove();
+            }, 3000);
         }
 
         function updateProgress() {
-            const solved = Object.values(gameState.solved).filter(v => v).length;
+            const solved = Object.values(gameState.solved).filter(function(v) { return v; }).length;
             const total = Object.keys(gameState.solved).length;
             const percentage = (solved / total) * 100;
             document.getElementById('progressFill').style.width = percentage + '%';
@@ -587,19 +576,11 @@
         function revealFinalAnswer() {
             const finalAnswer = document.getElementById('finalAnswer');
             finalAnswer.classList.add('show');
-            setTimeout(() => {
+            setTimeout(function() {
                 closeModal();
             }, 500);
         }
 
-        // Close modal on background click
-        document.getElementById('modal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeModal();
-            }
-        });
-
-        // Initialize on load
         init();
     </script>
 </body>
