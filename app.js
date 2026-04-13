@@ -1,57 +1,109 @@
-<!DOCTYPE html>
-<html lang="he" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Roblox Game Creator AI</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body { font-family: system-ui, -apple-system, sans-serif; }
-        .chat-container::-webkit-scrollbar { width: 6px; }
-        .chat-container::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 10px; }
-    </style>
-</head>
-<body class="bg-[#0d1117] text-gray-200 flex h-screen overflow-hidden">
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-    <aside class="w-72 bg-[#161b22] border-l border-gray-700 flex flex-col p-4">
-        <button id="new-project-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg mb-6 transition-all">
-            + פרויקט חדש
-        </button>
-        <div class="flex-1 overflow-y-auto space-y-2" id="project-list"></div>
-    </aside>
+// החלף את הטקסט בגרשיים במפתח ה-API האמיתי שלך
+const API_KEY = "AIzaSyA886QPoQ5wd-Pji2Qh9XR1aAOscj-8ekE";
 
-    <main class="flex-1 flex flex-col relative">
-        <header class="bg-[#161b22] p-4 border-b border-gray-700 shadow-sm">
-            <h1 id="current-project-title" class="text-xl font-semibold text-white">בחר או צור פרויקט</h1>
-        </header>
+const genAI = new GoogleGenerativeAI(API_KEY);
+const model = genAI.getGenerativeModel({ 
+    model: "gemini-1.5-flash",
+    systemInstruction: "אתה עוזר מומחה לפיתוח ברובלוקס. ענה בעברית בצורה ברורה. כשאתה נותן קוד, כתוב אותו ב-Lua בתוך בלוק קוד. עזור למשתמש שלב אחר שלב."
+});
 
-        <div id="chat-window" class="chat-container flex-1 overflow-y-auto p-6 space-y-6 flex flex-col">
-            <div class="bg-gray-800 p-4 rounded-2xl max-w-[80%] self-start border border-gray-700">
-                היי! איזה משחק חלומות נבנה היום ברובלוקס?
-            </div>
-        </div>
+let projects = JSON.parse(localStorage.getItem('roblox_projects')) || [];
+let currentProjectId = null;
 
-        <div class="p-6">
-            <div class="max-w-4xl mx-auto relative flex items-center">
-                <input id="user-input" type="text" 
-                       class="w-full bg-[#21262d] border border-gray-600 text-white p-4 pr-12 rounded-xl focus:outline-none focus:border-blue-500 transition-all shadow-xl"
-                       placeholder="כתוב לי מה התוכנית שלך...">
-                <button id="send-btn" class="absolute left-3 bg-blue-600 p-2 rounded-lg hover:bg-blue-500 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
-                    </svg>
-                </button>
-            </div>
-        </div>
-    </main>
+// פונקציה להצגת הודעות
+function appendMessage(role, text) {
+    const chatWindow = document.getElementById('chat-window');
+    const msgDiv = document.createElement('div');
+    
+    if (role === 'user') {
+        msgDiv.className = "bg-blue-600 p-4 rounded-2xl max-w-[80%] self-end text-white shadow-md";
+    } else {
+        msgDiv.className = "bg-[#21262d] p-4 rounded-2xl max-w-[80%] self-start border border-gray-700 text-gray-200 shadow-md";
+    }
+    
+    msgDiv.innerText = text;
+    chatWindow.appendChild(msgDiv);
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+}
 
-    <script type="importmap">
-      {
-        "imports": {
-          "@google/generative-ai": "https://esm.run/@google/generative-ai"
-        }
-      }
-    </script>
-    <script type="module" src="app.js"></script>
-</body>
-</html>
+// ניהול פרויקטים
+function renderProjectList() {
+    const list = document.getElementById('project-list');
+    list.innerHTML = '';
+    
+    projects.forEach(p => {
+        const item = document.createElement('div');
+        item.className = `p-3 rounded-lg cursor-pointer transition-all ${currentProjectId === p.id ? 'bg-blue-900 border border-blue-500' : 'hover:bg-gray-800 text-gray-400'}`;
+        item.innerText = `🎮 ${p.name}`;
+        item.onclick = () => loadProject(p.id);
+        list.appendChild(item);
+    });
+}
+
+function loadProject(id) {
+    currentProjectId = id;
+    const project = projects.find(p => p.id === id);
+    document.getElementById('current-project-title').innerText = project.name;
+    document.getElementById('chat-window').innerHTML = '';
+    project.chatHistory.forEach(msg => appendMessage(msg.role, msg.text));
+    renderProjectList();
+}
+
+// פונקציית שליחת הודעה
+async function handleSendMessage() {
+    const input = document.getElementById('user-input');
+    const text = input.value.trim();
+    
+    if (!text) return;
+    if (!currentProjectId) {
+        alert("קודם צריך ליצור פרויקט חדש בסיידבר!");
+        return;
+    }
+
+    appendMessage('user', text);
+    input.value = '';
+
+    const project = projects.find(p => p.id === currentProjectId);
+    project.chatHistory.push({ role: 'user', text: text });
+
+    try {
+        // הכנת ההיסטוריה ל-AI
+        const chat = model.startChat({
+            history: project.chatHistory.slice(0, -1).map(m => ({
+                role: m.role === 'user' ? 'user' : 'model',
+                parts: [{ text: m.text }],
+            })),
+        });
+
+        const result = await chat.sendMessage(text);
+        const response = await result.response;
+        const aiText = response.text();
+
+        appendMessage('ai', aiText);
+        project.chatHistory.push({ role: 'ai', text: aiText });
+        localStorage.setItem('roblox_projects', JSON.stringify(projects));
+        
+    } catch (error) {
+        console.error("Error:", error);
+        appendMessage('ai', "שגיאה: " + (error.message.includes("API key") ? "מפתח ה-API לא תקין או חסום." : "משהו השתבש בחיבור."));
+    }
+}
+
+// חיבור אירועים
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('new-project-btn').onclick = () => {
+        const name = prompt("איך נקרא למשחק?");
+        if (!name) return;
+        const newP = { id: Date.now(), name, chatHistory: [] };
+        projects.push(newP);
+        localStorage.setItem('roblox_projects', JSON.stringify(projects));
+        loadProject(newP.id);
+    };
+
+    document.getElementById('send-btn').onclick = handleSendMessage;
+    document.getElementById('user-input').onkeypress = (e) => { if (e.key === 'Enter') handleSendMessage(); };
+
+    renderProjectList();
+});
