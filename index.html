@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Roblox Dream Creator</title>
+    <title>Roblox Game Creator AI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { font-family: system-ui, -apple-system, sans-serif; }
@@ -14,36 +14,29 @@
 <body class="bg-[#0d1117] text-gray-200 flex h-screen overflow-hidden">
 
     <aside class="w-72 bg-[#161b22] border-l border-gray-700 flex flex-col p-4">
-        <button onclick="createNewProject()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg mb-6 transition-all flex items-center justify-center gap-2">
-            <span>+</span> פרויקט חדש
+        <button id="new-project-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg mb-6 transition-all">
+            + פרויקט חדש
         </button>
-        
-        <div class="flex-1 overflow-y-auto space-y-2" id="project-list">
-            </div>
-        
-        <div class="mt-auto pt-4 border-t border-gray-700 text-xs text-gray-500 text-center">
-            Roblox AI Assistant v1.0
-        </div>
+        <div class="flex-1 overflow-y-auto space-y-2" id="project-list"></div>
     </aside>
 
     <main class="flex-1 flex flex-col relative">
         <header class="bg-[#161b22] p-4 border-b border-gray-700 shadow-sm">
-            <h1 id="current-project-title" class="text-xl font-semibold text-white">בחר פרויקט או צור אחד חדש</h1>
+            <h1 id="current-project-title" class="text-xl font-semibold text-white">בחר או צור פרויקט</h1>
         </header>
 
         <div id="chat-window" class="chat-container flex-1 overflow-y-auto p-6 space-y-6 flex flex-col">
             <div class="bg-gray-800 p-4 rounded-2xl max-w-[80%] self-start border border-gray-700">
-                היי! אני כאן כדי לעזור לך לבנות את משחק החלומות שלך ברובלוקס. שלב אחרי שלב. איזה סוג משחק נבנה היום?
+                היי! איזה משחק חלומות נבנה היום ברובלוקס?
             </div>
         </div>
 
-        <div class="p-6 bg-gradient-to-t from-[#0d1117] to-transparent">
+        <div class="p-6">
             <div class="max-w-4xl mx-auto relative flex items-center">
                 <input id="user-input" type="text" 
                        class="w-full bg-[#21262d] border border-gray-600 text-white p-4 pr-12 rounded-xl focus:outline-none focus:border-blue-500 transition-all shadow-xl"
                        placeholder="כתוב לי מה התוכנית שלך...">
-                <button onclick="sendMessage()" 
-                        class="absolute left-3 bg-blue-600 p-2 rounded-lg hover:bg-blue-500 transition-colors">
+                <button id="send-btn" class="absolute left-3 bg-blue-600 p-2 rounded-lg hover:bg-blue-500 transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
                     </svg>
