@@ -1,11 +1,12 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-// 1. חובה להחליף למפתח חדש שייצרת ב-https://aistudio.google.com/app/apikey
-const API_KEY = "AIzaSyA886QPoQ5wd-Pji2Qh9XR1aAOscj-8ekE"; 
+// חשוב: צור מפתח חדש בכתובת: https://aistudio.google.com/app/apikey
+// המפתח הקודם כנראה כבר לא יעבוד.
+const API_KEY = "AIzaSyA886QPoQ5wd-Pji2Qh9XR1aAOscj-8ekE";
 
 const genAI = new GoogleGenerativeAI(API_KEY);
 
-// שימוש במודל gemini-1.5-flash-latest - הגרסה הכי יציבה כרגע
+// שינוי שם המודל לגרסה היציבה ביותר
 const model = genAI.getGenerativeModel({ 
     model: "gemini-1.5-flash-latest" 
 });
@@ -30,7 +31,7 @@ function renderProjectList() {
     list.innerHTML = '';
     projects.forEach(p => {
         const item = document.createElement('div');
-        item.className = `p-3 rounded-lg cursor-pointer transition-all mb-2 ${currentProjectId === p.id ? 'bg-blue-900 border border-blue-500' : 'hover:bg-gray-800 text-gray-400'}`;
+        item.className = `p-3 rounded-lg cursor-pointer transition-all mb-2 ${currentProjectId === p.id ? 'bg-blue-900 border border-blue-500 text-white' : 'hover:bg-gray-800 text-gray-400'}`;
         item.innerText = `🎮 ${p.name}`;
         item.onclick = () => loadProject(p.id);
         list.appendChild(item);
@@ -51,7 +52,7 @@ async function handleSendMessage() {
     const text = input.value.trim();
     
     if (!text || !currentProjectId) {
-        if (!currentProjectId) alert("נא ליצור או לבחור פרויקט!");
+        if (!currentProjectId) alert("נא ליצור או לבחור פרויקט בסיידבר קודם!");
         return;
     }
 
@@ -59,25 +60,14 @@ async function handleSendMessage() {
     input.value = '';
 
     const project = projects.find(p => p.id === currentProjectId);
-    project.chatHistory.push({ role: 'user', text: text });
 
     try {
-        // התחלת צ'אט עם הנחיות מערכת ידניות
+        // אתחול צ'אט עם היסטוריה בפורמט הנכון
         const chat = model.startChat({
-            history: [
-                {
-                    role: "user",
-                    parts: [{ text: "אתה עוזר מומחה לפיתוח ברובלוקס. ענה תמיד בעברית." }],
-                },
-                {
-                    role: "model",
-                    parts: [{ text: "הבנתי, אני מוכן לעזור לך לבנות משחקים ברובלוקס בעברית!" }],
-                },
-                ...project.chatHistory.slice(0, -1).map(m => ({
-                    role: m.role === 'user' ? "user" : "model",
-                    parts: [{ text: m.text }],
-                }))
-            ]
+            history: project.chatHistory.map(m => ({
+                role: m.role === 'user' ? 'user' : 'model',
+                parts: [{ text: m.text }],
+            })),
         });
 
         const result = await chat.sendMessage(text);
@@ -85,18 +75,21 @@ async function handleSendMessage() {
         const aiText = response.text();
 
         appendMessage('ai', aiText);
+        
+        // שמירת ההיסטוריה רק לאחר הצלחה
+        project.chatHistory.push({ role: 'user', text: text });
         project.chatHistory.push({ role: 'ai', text: aiText });
         localStorage.setItem('roblox_projects', JSON.stringify(projects));
         
     } catch (error) {
-        console.error("שגיאה:", error);
-        appendMessage('ai', "שגיאה בחיבור. וודא שהמפתח תקין ושבחרת פרויקט.");
+        console.error("שגיאה מפורטת:", error);
+        appendMessage('ai', "מצטער, חלה שגיאה. וודא שה-API Key שלך תקין וחדש.");
     }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('new-project-btn').onclick = () => {
-        const name = prompt("שם המשחק:");
+        const name = prompt("איך לקרוא למשחק?");
         if (!name) return;
         const newP = { id: Date.now(), name, chatHistory: [] };
         projects.push(newP);
@@ -105,6 +98,9 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     document.getElementById('send-btn').onclick = handleSendMessage;
-    document.getElementById('user-input').onkeypress = (e) => { if (e.key === 'Enter') handleSendMessage(); };
+    document.getElementById('user-input').onkeypress = (e) => { 
+        if (e.key === 'Enter') handleSendMessage(); 
+    };
+
     renderProjectList();
 });
